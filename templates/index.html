@@ -12,6 +12,12 @@
         <br><br>
         Status: {{ status }}
         <br>
-        Likes: {{ likes }}
+        {% if data %}
+            {% for item, value in data.items() %}
+            {{ item }}: {{ value }} <br>
+            {% endfor %}
+        {% endif %}
+        
+        
     </body>
 </html>

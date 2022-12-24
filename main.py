@@ -8,10 +8,13 @@ def index():
     return render_template("index.html")
 
 @app.route("/fetch", methods=["POST"])
-async def fetch():
-    data = await fetchdata(request.form["id"])
+def fetch():
+    data = fetchdata(request.form["id"])
 
-    return await render_template("index.html", status="OK", likes=data[0])
+    if not data:
+        return render_template("index.html", status="ERROR")
+
+    return render_template("index.html", status="OK", data=data)
  
 if __name__ == "__main__":
     app.run()
