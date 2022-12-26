@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request
-from getdata import fetchdata
+from getdata import fetchdata 
 
 app = Flask(__name__)
 

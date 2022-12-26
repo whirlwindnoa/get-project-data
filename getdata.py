@@ -1,6 +1,6 @@
 import time
 import asyncio
-import urllib
+from urllib.parse import quote_plus
 
 from bs4 import BeautifulSoup as bs
 from selenium import webdriver
@@ -9,7 +9,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
 chrome_options = Options()
 chrome_options.add_argument("--headless")
@@ -22,22 +22,32 @@ def document_initialised(driver):
 def fetchdata(id):
     driver.get(f"https://hub.kodland.org/ru/project/{id}")
 
-    elem = WebDriverWait(driver, 5).until(
-        EC.presence_of_element_located((By.CLASS_NAME, "stat__number"))
-    )
-    soup = bs(driver.page_source, features='lxml')
     try:
-        el = driver.find_element(By.CLASS_NAME, "stat_number")
-    except NoSuchElementException:
+        WebDriverWait(driver, 30).until(
+            EC.presence_of_element_located((By.XPATH, '//*[@id="post-modal___BV_modal_body_"]/div[1]/h3'))
+        )
+    except TimeoutException:
+        pass
+
+    soup = bs(driver.page_source, features='lxml')
+    
+    el = None
+    try:
+        el = driver.find_element(By.XPATH, '//*[@id="post-modal___BV_modal_body_"]/div[5]/div/div[2]/span')
+    except:
         el = driver.find_element(By.XPATH, '//*[@id="__layout"]/div/div/header/div/div/div[1]/ol/li[2]/span')
         name = el.text
     
-        driver.get(urllib.parse.quote_plus(f"https://hub.kodland.org/ru/search?search={name}"))
+        driver.get(f"https://hub.kodland.org/ru/search?search={quote_plus(name)}")
 
-        WebDriverWait(driver, timeout=5).until(document_initialised)
+        WebDriverWait(driver, 30).until(
+            EC.presence_of_element_located((By.XPATH, '//*[@id="__layout"]/div/div/div[2]/div[2]/div/div/div/div[2]/div'))
+        )
         soup = bs(driver.page_source, features="lxml")
 
-    stats = soup.find_all('span', class_="stat__number")
+    stats = soup.find('div', class_="d-flex justify-content-between")
+    stats = stats.find_all('span', class_="stat__number")
+
     data = {
         "Likes": 0,
         "Comments": 0,
