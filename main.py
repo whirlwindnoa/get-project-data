@@ -11,7 +11,7 @@ def index():
 def fetch():
     data = fetchdata(request.form["id"])
 
-    if not data:
+    if data is None:
         return render_template("index.html", status="ERROR")
 
     return render_template("index.html", status="OK", data=data)
